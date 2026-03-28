@@ -4,7 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function createTopicGroup(formData: FormData) {
+type ActionState = { error?: string } | null;
+
+export async function createTopicGroup(
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -22,7 +27,6 @@ export async function createTopicGroup(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  // Auto-join creator
   await supabase.from("group_memberships").insert({
     user_id: user.id,
     group_type: "topic",

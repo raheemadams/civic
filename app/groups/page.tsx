@@ -1,11 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createTopicGroup } from "./actions";
 import { Users, Plus, MapPin } from "lucide-react";
+import { CreateGroupForm } from "./CreateGroupForm";
 import A from "@/components/ui/A";
-import Input from "@/components/ui/Input";
-import Textarea from "@/components/ui/Textarea";
-import Button from "@/components/ui/Button";
 import AppHeader from "@/components/layout/AppHeader";
 
 export default async function GroupsPage() {
@@ -128,38 +125,7 @@ export default async function GroupsPage() {
                 Anyone can join open groups.
               </p>
 
-              <form action={createTopicGroup} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                    Group Name
-                  </label>
-                  <Input
-                    type="text"
-                    name="name"
-                    required
-                    placeholder="e.g. Education Reform NG"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-civic-green"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                    Description
-                    <span className="text-gray-400 font-normal normal-case ml-1">(optional)</span>
-                  </label>
-                  <Textarea
-                    name="description"
-                    rows={3}
-                    placeholder="What is this group about?"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-civic-green resize-none"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full py-2.5 rounded-xl bg-civic-green text-white font-bold text-sm hover:bg-civic-green-mid transition-colors"
-                >
-                  Create Group →
-                </Button>
-              </form>
+              <CreateGroupForm />
             </div>
           </div>
 

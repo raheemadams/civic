@@ -122,32 +122,37 @@ export async function removePost(
   }
 }
 
-export async function updateUserRole(userId: string, role: string): Promise<void> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+export async function updateUserRole(userId: string, role: string): Promise<ActionState> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: "Unauthorized" };
 
-  const { data: caller } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+    const { data: caller } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-  if (!caller || !["admin", "super_admin"].includes(caller.role)) {
-    throw new Error("Only admins can change roles.");
+    if (!caller || !["admin", "super_admin"].includes(caller.role)) {
+      return { error: "Only admins can change roles." };
+    }
+
+    const adminClient = createAdminClient();
+    await adminClient
+      .from("profiles")
+      .update({ role })
+      .eq("id", userId);
+
+    await adminClient.auth.admin.updateUserById(userId, {
+      app_metadata: { role },
+    });
+
+    revalidatePath("/admin");
+    return null;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Action failed" };
   }
-
-  const adminClient = createAdminClient();
-  await adminClient
-    .from("profiles")
-    .update({ role })
-    .eq("id", userId);
-
-  await adminClient.auth.admin.updateUserById(userId, {
-    app_metadata: { role },
-  });
-
-  revalidatePath("/admin");
 }
 
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
