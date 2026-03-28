@@ -1,4 +1,4 @@
-import { Play, MapPin, ExternalLink, Video } from "lucide-react";
+import { Play, MapPin, Video } from "lucide-react";
 import A from "@/components/ui/A";
 
 const categoryColors: Record<string, string> = {
@@ -60,12 +60,20 @@ export default function CivicLensSection({ videos }: Props) {
               Stories from across Nigeria — powered by citizens, not politicians.
             </p>
           </div>
-          <A
-            href="/videos/submit"
-            className="text-civic-lime font-bold text-sm hover:text-white transition-colors shrink-0 ml-6 sm:ml-0"
-          >
-            Submit a video →
-          </A>
+          <div className="flex items-center gap-4 shrink-0 ml-6 sm:ml-0">
+            <A
+              href="/videos"
+              className="text-white/60 font-bold text-sm hover:text-white transition-colors"
+            >
+              See all →
+            </A>
+            <A
+              href="/videos/submit"
+              className="text-civic-lime font-bold text-sm hover:text-white transition-colors"
+            >
+              Submit a video →
+            </A>
+          </div>
         </div>
 
         {videos.length > 0 ? (
@@ -78,9 +86,7 @@ export default function CivicLensSection({ videos }: Props) {
               return (
                 <A
                   key={video.id}
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/videos/${video.id}`}
                   className="group relative overflow-hidden rounded-2xl bg-black block"
                 >
                   <div className="relative aspect-video w-full overflow-hidden">
@@ -105,11 +111,6 @@ export default function CivicLensSection({ videos }: Props) {
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border backdrop-blur-sm ${colorClass}`}>
                         {video.category}
                       </span>
-                    </div>
-
-                    {/* External link icon */}
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white/80 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ExternalLink size={10} />
                     </div>
 
                     {/* Play button */}

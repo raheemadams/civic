@@ -54,6 +54,7 @@ create table nominees (
   writeup          text not null,
   status           text not null default 'pending', -- pending | approved | rejected
   nomination_count integer default 1,
+  featured         boolean default false,
   nominated_by     uuid references profiles(id),
   rejection_note   text,
   created_at       timestamptz default now()
@@ -99,6 +100,17 @@ create table videos (
   status       text not null default 'pending', -- pending | approved | rejected
   submitted_by uuid references profiles(id),
   created_at   timestamptz default now()
+);
+
+-- ============================================================
+-- VIDEO COMMENTS
+-- ============================================================
+create table video_comments (
+  id         uuid default uuid_generate_v4() primary key,
+  video_id   uuid not null references videos(id) on delete cascade,
+  user_id    uuid not null references profiles(id) on delete cascade,
+  content    text not null,
+  created_at timestamptz default now()
 );
 
 -- ============================================================
@@ -195,6 +207,7 @@ alter table profiles          enable row level security;
 alter table nominees          enable row level security;
 alter table endorsements      enable row level security;
 alter table videos            enable row level security;
+alter table video_comments    enable row level security;
 alter table topic_groups      enable row level security;
 alter table group_memberships enable row level security;
 alter table group_posts       enable row level security;
@@ -226,6 +239,16 @@ create policy "Anyone can view approved videos"
   on videos for select using (status = 'approved');
 create policy "Authenticated users can submit videos"
   on videos for insert to authenticated with check (auth.uid() = submitted_by);
+
+-- Video comments: anyone can view on approved videos, auth users can comment
+create policy "Anyone can view comments on approved videos"
+  on video_comments for select using (
+    exists (select 1 from videos where videos.id = video_comments.video_id and videos.status = 'approved')
+  );
+create policy "Authenticated users can comment on videos"
+  on video_comments for insert to authenticated with check (auth.uid() = user_id);
+create policy "Users can delete their own video comments"
+  on video_comments for delete using (auth.uid() = user_id);
 
 -- Topic groups: visible to all authenticated users
 create policy "Authenticated users can view groups"

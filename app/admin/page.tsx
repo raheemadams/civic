@@ -5,14 +5,15 @@ import {
   approveNominee, rejectNominee,
   approveVideo, rejectVideo,
   restorePost, removePost,
+  setFeaturedNominee,
 } from "./actions";
 import { AdminActionForm } from "./AdminActionForm";
 import { RoleSelector } from "./RoleSelector";
-import { MapPin, CheckCircle, XCircle, RotateCcw, Trash2 } from "lucide-react";
+import { MapPin, CheckCircle, XCircle, RotateCcw, Trash2, Star, StarOff } from "lucide-react";
 import A from "@/components/ui/A";
 import AppHeader from "@/components/layout/AppHeader";
 
-const TABS = ["Nominations", "Videos", "Flagged Posts", "Users"] as const;
+const TABS = ["Nominations", "Videos", "Flagged Posts", "Users", "Featured"] as const;
 type Tab = typeof TABS[number];
 
 export default async function AdminPage({
@@ -45,6 +46,7 @@ export default async function AdminPage({
     { data: pendingVideos },
     { data: flaggedPosts },
     { data: allUsers },
+    { data: approvedNominees },
   ] = await Promise.all([
     adminDb.from("nominees").select("*").eq("status", "pending").order("created_at"),
     adminDb.from("videos").select("*").eq("status", "pending").order("created_at"),
@@ -52,13 +54,17 @@ export default async function AdminPage({
     profile.role === "super_admin" || profile.role === "admin"
       ? adminDb.from("profiles").select("*").order("created_at", { ascending: false }).limit(50)
       : { data: [] },
+    adminDb.from("nominees").select("*").eq("status", "approved").order("featured", { ascending: false }).order("name"),
   ]);
+
+  const featuredCount = approvedNominees?.filter((n) => n.featured).length ?? 0;
 
   const counts = {
     Nominations: pendingNominees?.length ?? 0,
     Videos: pendingVideos?.length ?? 0,
     "Flagged Posts": flaggedPosts?.length ?? 0,
     Users: allUsers?.length ?? 0,
+    Featured: featuredCount,
   };
 
   return (
@@ -257,6 +263,74 @@ export default async function AdminPage({
             )}
           </div>
         )}
+        {/* Tab: Featured */}
+        {activeTab === "Featured" && (
+          <div className="space-y-6">
+            <p className="text-sm text-gray-500">
+              {featuredCount} of {approvedNominees?.length ?? 0} approved nominees featured on the homepage grid.
+            </p>
+
+            {/* Currently featured */}
+            <div>
+              <h2 className="font-display font-bold uppercase text-civic-green-dark text-lg mb-3">
+                Featured ({featuredCount})
+              </h2>
+              <div className="space-y-3">
+                {approvedNominees?.filter((n) => n.featured).map((n) => (
+                  <div key={n.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-civic-lime flex items-center justify-center shrink-0">
+                        <Star size={14} fill="black" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{n.name}</p>
+                        <p className="text-xs text-gray-400 flex items-center gap-1">
+                          <MapPin size={10} />{n.lga}, {n.state} · {n.field}
+                        </p>
+                      </div>
+                    </div>
+                    <AdminActionForm action={setFeaturedNominee.bind(null, n.id, false)}>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-red-50 hover:text-red-600 transition-colors border border-gray-200">
+                        <StarOff size={13} /> Unfeature
+                      </button>
+                    </AdminActionForm>
+                  </div>
+                ))}
+                {featuredCount === 0 && (
+                  <p className="text-gray-400 text-sm">No featured nominees yet.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Not featured */}
+            <div>
+              <h2 className="font-display font-bold uppercase text-civic-green-dark text-lg mb-3">
+                All Approved — Not Featured
+              </h2>
+              <div className="space-y-3">
+                {approvedNominees?.filter((n) => !n.featured).map((n) => (
+                  <div key={n.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">{n.name}</p>
+                      <p className="text-xs text-gray-400 flex items-center gap-1">
+                        <MapPin size={10} />{n.lga}, {n.state} · {n.field}
+                      </p>
+                    </div>
+                    <AdminActionForm action={setFeaturedNominee.bind(null, n.id, true)}>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-civic-green-light text-civic-green-dark text-xs font-bold hover:bg-civic-green hover:text-white transition-colors border border-civic-green/20">
+                        <Star size={13} /> Feature
+                      </button>
+                    </AdminActionForm>
+                  </div>
+                ))}
+                {(approvedNominees?.filter((n) => !n.featured).length ?? 0) === 0 && (
+                  <p className="text-gray-400 text-sm">All approved nominees are already featured.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

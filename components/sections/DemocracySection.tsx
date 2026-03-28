@@ -1,9 +1,10 @@
-import { nominees, nomineeStates } from "@/data/nominees";
+import { createClient } from "@/lib/supabase/server";
 import { quickLinks } from "@/data/quickLinks";
 import NomineeCard from "@/components/ui/NomineeCard";
 import QuickLinkItem from "@/components/ui/QuickLinkItem";
 import A from "@/components/ui/A";
 import { Users, MessageCircle } from "lucide-react";
+import { Nominee } from "@/types";
 
 const activeGroups = [
   { name: "Lagos LGA Network",   type: "LGA",   members: 1240, posts: 34 },
@@ -12,7 +13,31 @@ const activeGroups = [
   { name: "Corruption Watch",    type: "Topic",  members: 2103, posts: 57 },
 ];
 
-export default function DemocracySection() {
+const avatarUrl = (name: string, bg = "1a5c2a") =>
+  `https://ui-avatars.com/api/?background=${bg}&color=fff&bold=true&size=256&name=${encodeURIComponent(name)}`;
+
+export default async function DemocracySection() {
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("nominees")
+    .select("id, name, photo_url, state, lga, field, writeup")
+    .eq("status", "approved")
+    .eq("featured", true)
+    .order("created_at")
+    .limit(12);
+
+  const nominees: Nominee[] = (rows ?? []).map((r) => ({
+    id: r.id,
+    name: r.name,
+    achievement: r.writeup,
+    field: r.field,
+    state: r.state,
+    lga: r.lga,
+    imageUrl: r.photo_url ?? avatarUrl(r.name),
+  }));
+
+  const states = [...new Set(nominees.map((n) => n.state))].sort();
+
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-civic-gray">
       <div className="max-w-7xl mx-auto">
@@ -23,7 +48,7 @@ export default function DemocracySection() {
             <div className="flex items-center gap-3 mb-1">
               <div className="w-3 h-3 rounded-full bg-civic-lime shrink-0" />
               <h2 className="font-display font-bold uppercase tracking-tight text-civic-green-dark text-2xl sm:text-3xl">
-                Nominated Nigerians
+                Featured Nigerians
               </h2>
             </div>
             <p className="text-gray-400 text-sm mb-5 ml-6">
@@ -38,7 +63,7 @@ export default function DemocracySection() {
               >
                 All States
               </button>
-              {nomineeStates.map((state) => (
+              {states.map((state) => (
                 <button
                   key={state}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full bg-civic-green-light text-civic-green-dark hover:bg-civic-green hover:text-white transition-colors duration-150"
@@ -60,7 +85,7 @@ export default function DemocracySection() {
                 href="/nominees"
                 className="inline-flex items-center gap-2 text-civic-green font-bold text-sm hover:text-civic-green-dark transition-colors"
               >
-                View all nominees across all LGAs →
+                View all nominated Nigerians →
               </A>
             </div>
           </div>

@@ -122,6 +122,27 @@ export async function removePost(
   }
 }
 
+export async function setFeaturedNominee(
+  nomineeId: string,
+  featured: boolean,
+  _prevState: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  try {
+    const supabase = await createClient();
+    await requireAdmin(supabase);
+    await createAdminClient()
+      .from("nominees")
+      .update({ featured })
+      .eq("id", nomineeId);
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return null;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Action failed" };
+  }
+}
+
 export async function updateUserRole(userId: string, role: string): Promise<ActionState> {
   try {
     const supabase = await createClient();
