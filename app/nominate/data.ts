@@ -1,0 +1,17 @@
+export const FIELDS = [
+  "Technology",
+  "Medicine & Health",
+  "Law & Justice",
+  "Business & Entrepreneurship",
+  "Education",
+  "Agriculture",
+  "Engineering",
+  "Finance & Banking",
+  "Arts & Culture",
+  "Sports",
+  "Media & Journalism",
+  "Politics & Governance",
+  "Environment",
+  "Social Work & NGO",
+  "Science & Research",
+];

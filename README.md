@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project 774 — Naija Civic Connect
+
+Nigeria's credibility database — nominating the best people from all 774 local governments.
 
 ## Getting Started
 
@@ -6,31 +8,50 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.local.example` to `.env.local` and fill in your Supabase credentials:
 
-## Learn More
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Database Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run `supabase/schema.sql` in your Supabase SQL Editor to create all tables, triggers, RLS policies, and storage buckets (including `nominee-photos` and `avatars`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Admin Account Setup
 
-## Deploy on Vercel
+Every account created through `/register` starts with `role = 'user'`. There is no automatic admin creation — you must promote the first admin manually via the Supabase SQL Editor.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Step 1 — Find the user's UUID:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```sql
+select id, full_name, role from profiles where full_name = 'Your Name';
+```
+
+**Step 2 — Promote them:**
+
+```sql
+update profiles
+set role = 'super_admin'  -- or 'admin' or 'moderator'
+where id = '<uuid-from-above>';
+```
+
+**Step 3 — Further promotions via the app:**
+
+Once you have one `super_admin`, they can promote other users through the Users tab at `/admin?tab=Users`.
+
+### Role permissions
+
+| Role | `/admin` access | Can promote users |
+|---|---|---|
+| `user` | ❌ redirected to dashboard | — |
+| `moderator` | ✓ nominations, videos, flagged posts | ❌ |
+| `admin` | ✓ + Users tab (read) | ❌ |
+| `super_admin` | ✓ full access | ✓ |
