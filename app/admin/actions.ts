@@ -4,78 +4,71 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
-export async function approveNominee(nomineeId: string) {
+export async function approveNominee(nomineeId: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("nominees")
     .update({ status: "approved" })
     .eq("id", nomineeId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
   revalidatePath("/nominees");
 }
 
-export async function rejectNominee(nomineeId: string, note: string) {
+export async function rejectNominee(nomineeId: string, note: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("nominees")
     .update({ status: "rejected", rejection_note: note })
     .eq("id", nomineeId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
 }
 
-export async function approveVideo(videoId: string) {
+export async function approveVideo(videoId: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("videos")
     .update({ status: "approved" })
     .eq("id", videoId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
 }
 
-export async function rejectVideo(videoId: string) {
+export async function rejectVideo(videoId: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("videos")
     .update({ status: "rejected" })
     .eq("id", videoId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
 }
 
-export async function restorePost(postId: string) {
+export async function restorePost(postId: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("group_posts")
     .update({ is_suspended: false, flag_count: 0 })
     .eq("id", postId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
 }
 
-export async function removePost(postId: string) {
+export async function removePost(postId: string): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
-  const { error } = await createAdminClient()
+  await createAdminClient()
     .from("group_posts")
     .delete()
     .eq("id", postId);
-  if (error) return { error: error.message };
   revalidatePath("/admin");
 }
 
-export async function updateUserRole(userId: string, role: string) {
-  // Verify the caller is a super_admin via the user session
+export async function updateUserRole(userId: string, role: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthorized" };
+  if (!user) throw new Error("Unauthorized");
 
   const { data: caller } = await supabase
     .from("profiles")
@@ -84,21 +77,15 @@ export async function updateUserRole(userId: string, role: string) {
     .single();
 
   if (!caller || !["admin", "super_admin"].includes(caller.role)) {
-    return { error: "Only admins can change roles." };
+    throw new Error("Only admins can change roles.");
   }
 
-  // Use the service-role client to bypass the RLS policy that
-  // restricts profile updates to auth.uid() = id
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  await adminClient
     .from("profiles")
     .update({ role })
     .eq("id", userId);
 
-  if (error) return { error: error.message };
-
-  // Sync role into auth.users app_metadata so it appears in the
-  // Supabase Auth dashboard and is available in JWT claims
   await adminClient.auth.admin.updateUserById(userId, {
     app_metadata: { role },
   });
