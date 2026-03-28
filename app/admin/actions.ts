@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
-export async function approveNominee(nomineeId: string): Promise<void> {
+export async function approveNominee(nomineeId: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
@@ -15,7 +15,7 @@ export async function approveNominee(nomineeId: string): Promise<void> {
   revalidatePath("/nominees");
 }
 
-export async function rejectNominee(nomineeId: string, note: string): Promise<void> {
+export async function rejectNominee(nomineeId: string, note: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
@@ -25,7 +25,7 @@ export async function rejectNominee(nomineeId: string, note: string): Promise<vo
   revalidatePath("/admin");
 }
 
-export async function approveVideo(videoId: string): Promise<void> {
+export async function approveVideo(videoId: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
@@ -35,7 +35,7 @@ export async function approveVideo(videoId: string): Promise<void> {
   revalidatePath("/admin");
 }
 
-export async function rejectVideo(videoId: string): Promise<void> {
+export async function rejectVideo(videoId: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
@@ -45,7 +45,7 @@ export async function rejectVideo(videoId: string): Promise<void> {
   revalidatePath("/admin");
 }
 
-export async function restorePost(postId: string): Promise<void> {
+export async function restorePost(postId: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
@@ -55,7 +55,7 @@ export async function restorePost(postId: string): Promise<void> {
   revalidatePath("/admin");
 }
 
-export async function removePost(postId: string): Promise<void> {
+export async function removePost(postId: string, _formData?: FormData): Promise<void> {
   const supabase = await createClient();
   await requireAdmin(supabase);
   await createAdminClient()
