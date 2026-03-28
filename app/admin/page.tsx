@@ -6,6 +6,7 @@ import {
   approveVideo, rejectVideo,
   restorePost, removePost,
 } from "./actions";
+import { AdminActionForm } from "./AdminActionForm";
 import { RoleSelector } from "./RoleSelector";
 import { MapPin, CheckCircle, XCircle, RotateCcw, Trash2 } from "lucide-react";
 import A from "@/components/ui/A";
@@ -115,16 +116,16 @@ export default async function AdminPage({
                       <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">{n.writeup}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <form action={approveNominee.bind(null, n.id)}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green text-white text-xs font-bold hover:bg-civic-green-mid transition-colors" suppressHydrationWarning>
+                      <AdminActionForm action={approveNominee.bind(null, n.id)}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green text-white text-xs font-bold hover:bg-civic-green-mid transition-colors">
                           <CheckCircle size={14} /> Approve
                         </button>
-                      </form>
-                      <form action={rejectNominee.bind(null, n.id, "Does not meet criteria.")}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200" suppressHydrationWarning>
+                      </AdminActionForm>
+                      <AdminActionForm action={rejectNominee.bind(null, n.id, "Does not meet criteria.")}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200">
                           <XCircle size={14} /> Reject
                         </button>
-                      </form>
+                      </AdminActionForm>
                     </div>
                   </div>
                   <p className="text-xs text-gray-300 mt-3">
@@ -159,16 +160,16 @@ export default async function AdminPage({
                       </A>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <form action={approveVideo.bind(null, v.id)}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green text-white text-xs font-bold hover:bg-civic-green-mid transition-colors" suppressHydrationWarning>
+                      <AdminActionForm action={approveVideo.bind(null, v.id)}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green text-white text-xs font-bold hover:bg-civic-green-mid transition-colors">
                           <CheckCircle size={14} /> Approve
                         </button>
-                      </form>
-                      <form action={rejectVideo.bind(null, v.id)}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200" suppressHydrationWarning>
+                      </AdminActionForm>
+                      <AdminActionForm action={rejectVideo.bind(null, v.id)}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200">
                           <XCircle size={14} /> Reject
                         </button>
-                      </form>
+                      </AdminActionForm>
                     </div>
                   </div>
                 </div>
@@ -196,16 +197,16 @@ export default async function AdminPage({
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <form action={restorePost.bind(null, post.id)}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green-light text-civic-green-dark text-xs font-bold hover:bg-civic-green hover:text-white transition-colors border border-civic-green/20" suppressHydrationWarning>
+                      <AdminActionForm action={restorePost.bind(null, post.id)}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-civic-green-light text-civic-green-dark text-xs font-bold hover:bg-civic-green hover:text-white transition-colors border border-civic-green/20">
                           <RotateCcw size={14} /> Restore
                         </button>
-                      </form>
-                      <form action={removePost.bind(null, post.id)}>
-                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200" suppressHydrationWarning>
+                      </AdminActionForm>
+                      <AdminActionForm action={removePost.bind(null, post.id)}>
+                        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors border border-red-200">
                           <Trash2 size={14} /> Remove
                         </button>
-                      </form>
+                      </AdminActionForm>
                     </div>
                   </div>
                 </div>
