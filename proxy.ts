@@ -11,7 +11,7 @@ const PROTECTED_PREFIXES = [
   "/admin",
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
