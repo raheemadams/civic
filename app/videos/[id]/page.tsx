@@ -143,7 +143,7 @@ export default async function VideoDetailPage({
           {comments.length > 0 ? (
             <div className="mt-6 space-y-4">
               {comments.map((c) => {
-                const profile = c.profiles as { full_name: string } | null;
+                const profile = c.profiles as unknown as { full_name: string } | null;
                 return (
                   <div key={c.id} className="flex gap-3 border-b border-gray-50 pb-4 last:border-0 last:pb-0">
                     {/* Avatar initial */}

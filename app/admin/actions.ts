@@ -176,6 +176,63 @@ export async function updateUserRole(userId: string, role: string): Promise<Acti
   }
 }
 
+export async function overrideHermesDecision(
+  decisionId: string,
+  overrideAction: string,
+  note: string,
+  _prevState: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: "Unauthorized" };
+    await requireAdmin(supabase);
+
+    const adminDb = createAdminClient();
+    const { data: decision } = await adminDb
+      .from("hermes_decisions")
+      .select("*")
+      .eq("id", decisionId)
+      .single();
+
+    if (!decision) return { error: "Decision not found" };
+
+    await adminDb
+      .from("hermes_decisions")
+      .update({ overridden_by: user.id, override_note: note })
+      .eq("id", decisionId);
+
+    if (decision.target_type === "nominee") {
+      await adminDb
+        .from("nominees")
+        .update({
+          status: overrideAction === "approve" ? "approved" : "rejected",
+          rejection_note: overrideAction === "reject" ? note : null,
+        })
+        .eq("id", decision.target_id);
+    } else if (decision.target_type === "video") {
+      await adminDb
+        .from("videos")
+        .update({ status: overrideAction === "approve" ? "approved" : "rejected" })
+        .eq("id", decision.target_id);
+    } else if (decision.target_type === "post") {
+      await adminDb
+        .from("group_posts")
+        .update({
+          is_suspended: overrideAction === "reject",
+          flag_count: overrideAction === "approve" ? 0 : undefined,
+        })
+        .eq("id", decision.target_id);
+    }
+
+    revalidatePath("/admin");
+    return null;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Action failed" };
+  }
+}
+
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");

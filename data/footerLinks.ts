@@ -6,6 +6,7 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { label: "Voter Education", href: "/voter-education" },
       { label: "Civic Rights Guide", href: "/civic-rights" },
+      { label: "Community Blog", href: "/blog" },
       { label: "Budget Tracker", href: "/budget-tracker" },
       { label: "Constituency Map", href: "/constituency-map" },
     ],

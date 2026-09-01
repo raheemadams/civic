@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   Users, Video, UserPlus, MapPin, ChevronRight,
-  TrendingUp, Star, CheckCircle, BookOpen, Globe
+  TrendingUp, Star, CheckCircle, BookOpen, Globe, PenLine
 } from "lucide-react";
 import A from "@/components/ui/A";
 import AppHeader from "@/components/layout/AppHeader";
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Quick actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <A
                 href="/nominate"
                 className="bg-civic-green text-white rounded-2xl p-5 flex flex-col gap-3 hover:bg-civic-green-mid transition-colors group"
@@ -182,6 +182,19 @@ export default async function DashboardPage() {
                 <div>
                   <p className="font-bold text-sm text-gray-800">Groups</p>
                   <p className="text-gray-400 text-xs mt-0.5">Discuss issues with your LGA community</p>
+                </div>
+                <ChevronRight size={16} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
+              </A>
+              <A
+                href="/blog/write"
+                className="bg-white rounded-2xl p-5 flex flex-col gap-3 hover:bg-civic-green-light transition-colors shadow-sm group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-civic-green-light flex items-center justify-center">
+                  <PenLine size={20} className="text-civic-green" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-gray-800">Blog</p>
+                  <p className="text-gray-400 text-xs mt-0.5">Write about civic life in Nigeria</p>
                 </div>
                 <ChevronRight size={16} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
               </A>

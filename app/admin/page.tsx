@@ -12,8 +12,9 @@ import { RoleSelector } from "./RoleSelector";
 import { MapPin, CheckCircle, XCircle, RotateCcw, Trash2, Star, StarOff } from "lucide-react";
 import A from "@/components/ui/A";
 import AppHeader from "@/components/layout/AppHeader";
+import { HermesPanel } from "./HermesPanel";
 
-const TABS = ["Nominations", "Videos", "Flagged Posts", "Users", "Featured"] as const;
+const TABS = ["Hermes", "Nominations", "Videos", "Flagged Posts", "Users", "Featured"] as const;
 type Tab = typeof TABS[number];
 
 export default async function AdminPage({
@@ -36,7 +37,7 @@ export default async function AdminPage({
   }
 
   const params = await searchParams;
-  const activeTab: Tab = (TABS.find((t) => t === params.tab) ?? "Nominations");
+  const activeTab: Tab = (TABS.find((t) => t === params.tab) ?? "Hermes");
 
   // Use admin client to bypass RLS for all admin data fetches
   const adminDb = createAdminClient();
@@ -47,6 +48,7 @@ export default async function AdminPage({
     { data: flaggedPosts },
     { data: allUsers },
     { data: approvedNominees },
+    { data: hermesDecisions },
   ] = await Promise.all([
     adminDb.from("nominees").select("*").eq("status", "pending").order("created_at"),
     adminDb.from("videos").select("*").eq("status", "pending").order("created_at"),
@@ -55,11 +57,24 @@ export default async function AdminPage({
       ? adminDb.from("profiles").select("*").order("created_at", { ascending: false }).limit(50)
       : { data: [] },
     adminDb.from("nominees").select("*").eq("status", "approved").order("featured", { ascending: false }).order("name"),
+    adminDb.from("hermes_decisions").select("*").order("created_at", { ascending: false }).limit(50),
   ]);
 
   const featuredCount = approvedNominees?.filter((n) => n.featured).length ?? 0;
+  const hd = hermesDecisions ?? [];
+  const hermesStats = {
+    total: hd.length,
+    approved: hd.filter((d: Record<string, unknown>) => d.action === "approve").length,
+    rejected: hd.filter((d: Record<string, unknown>) => d.action === "reject").length,
+    escalated: hd.filter((d: Record<string, unknown>) => d.escalated).length,
+    overridden: hd.filter((d: Record<string, unknown>) => d.overridden_by).length,
+    avgConfidence: hd.length
+      ? hd.reduce((sum: number, d: Record<string, unknown>) => sum + (d.confidence as number || 0), 0) / hd.length
+      : 0,
+  };
 
   const counts = {
+    Hermes: hd.filter((d: Record<string, unknown>) => d.escalated && !d.overridden_by).length,
     Nominations: pendingNominees?.length ?? 0,
     Videos: pendingVideos?.length ?? 0,
     "Flagged Posts": flaggedPosts?.length ?? 0,
@@ -99,6 +114,11 @@ export default async function AdminPage({
             </A>
           ))}
         </div>
+
+        {/* Tab: Hermes */}
+        {activeTab === "Hermes" && (
+          <HermesPanel decisions={hd as any} stats={hermesStats} />
+        )}
 
         {/* Tab: Nominations */}
         {activeTab === "Nominations" && (
